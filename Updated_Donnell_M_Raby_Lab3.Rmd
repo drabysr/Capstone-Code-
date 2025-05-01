@@ -1,0 +1,158 @@
+---
+title: "Raby Lab 3"
+author: "Raby, Donnell M Sr."
+date: "2024-12-09"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr) 
+library(dplyr)
+library(tidyr)
+library(readxl)
+library(kableExtra)
+library(tidyverse)
+library(httr)
+library(readxl)
+```
+
+## Title of your Analysis
+
+Unequal Ranks: Analyzing Race, Promotion Disparities and Medical Access in the U.S. Military is important to me because I have personally witnessed the challenges faced by minority service members during my military career. These disparities are not just numbers—they reflect real experiences of injustice, overlooked potential, and compromised well-being. My commitment to fairness and equity drives my passion to uncover the systemic issues that affect the careers and health of Soldiers of color. This research allows me to honor the service of all who wear the uniform while advocating for the accountability and reform our military needs.
+
+### Research Question
+How do race and ethnicity influence promotion rates and access to medical care among active-duty officers in the U.S. military, and what statistical disparities exist between Black, Hispanic, Asian, and White service members across different military branches from 2000 to 2025?
+
+### Problem Statement
+The U.S. military is founded on the principles of merit, discipline, and equal opportunity; however, longstanding disparities in promotion rates and medical access among service members of different racial and ethnic backgrounds suggest a troubling contradiction to these values. This study explores the complex dynamics of systemic inequity, focusing specifically on the disparities experienced by Black, Hispanic, Asian, and other minority personnel in comparison to their White counterparts. As a military veteran with over two decades of service, I have witnessed firsthand how unequal opportunities and inconsistent healthcare access can affect morale, career progression, and overall well-being. This research is deeply personal and professionally motivating, aiming to expose inequities and advocate for reform rooted in fairness and transparency. By bringing visibility to these issues, the study holds the potential to drive policy change, promote accountability, and empower marginalized communities within the military to pursue just and equitable careers.
+
+### Data Definition
+Insert a data definition that Identifies the name of the dataset, data source, date accessed, and a brief description of the data contained within the file. Include a link to the file as necessary.
+
+```{r data import, echo=FALSE}
+# Define the URL of the Excel file
+url <- "https://www.va.gov/vetdata/docs/SurveysAndStudies/Publicdata2010.xls"
+
+# Define a temporary file path
+temp_file <- tempfile(fileext = ".xls")
+
+# Download the file
+GET(url, write_disk(temp_file, overwrite = TRUE))
+```
+
+## Data Collection
+
+```{r dataframe, echo=FALSE}
+# Read the downloaded Excel file into a data frame
+df <- read_excel(temp_file)
+head(df)
+```
+
+Observations of the dataset. Consider the number of rows and columns to explain the size of the data set. Note if there are any missing values in the dataset and their potential effect on your analysis. Outline next steps for the analysis, what do you need to do to get to a point of analyzing the research question?
+# PART 1
+## 1.2
+The two variables that will be used are military promotion (response variable) and race (black and white Soldiers). The utilized datasets includes key variables such as military promotion status and race. This dataset enables a focused analysis on whether racial disparities exist in promotion outcomes across different ranks within the military. By isolating these variables, I can conduct statistical tests such as chi-square or logistic regression to examine correlations and disparities. The data provides a foundation for uncovering patterns that contribute to unequal advancement opportunities based on racial background.
+
+## 1.3
+There is a significant and persistent difference in promotion opportunities between White and Black Soldiers within the military ranks. Data and studies have shown that White Soldiers are statistically more likely to advance to higher leadership positions, including officer and general ranks, compared to their Black counterparts. These disparities are often linked to systemic barriers, limited access to mentorship, and bias in evaluation processes. Addressing this issue is essential to ensure fairness, equity, and a truly merit-based military system.
+
+## 1.4
+This study data analysis plan is to hypothesize that race significantly influences promotion advantages within the U.S. military, with White service members receiving more frequent and higher promotions than their minority counterparts. The research will explore an alternative approach by analyzing longitudinal promotion trends, and performance evaluations across racial groups to identify underlying associations. Through this method, the goal is to uncover structural patterns and propose actionable reforms to ensure equitable promotion opportunities for all service members. I will analyze data to determine if a significant relationship exists between the two.Lastly I will transfigure race and promotion advancement variables to ensure I implement the proper information during my analysis.
+
+## 1.5
+The categories for officer promotion is very limited and does not encompass all branches of the military. Additionally, a significant number of lower enlisted Soldier introduce bias and reduce analytics in which I would like to captured for enlisted and commissioned Soldiers.
+
+# PART 2
+## 1.6
+The data I used does not have any missing values. The dataset used for this research was thoroughly reviewed and confirmed to contain no missing values across all relevant variables. Each entry for race, promotion status, and related demographic information was complete and validated during the data cleaning process. This ensures the integrity and reliability of the analysis conducted on promotion disparities in the military.
+
+## 1.7
+
+```{r sheet_names}
+sheet_names <- excel_sheets(temp_file) #adding this line because there are multiple sheets
+sheet_names
+```
+
+```{r}
+df_sheet1 <- read_excel(temp_file, sheet = sheet_names[1]) ##This sheet is where my Black, Asian and Hispanic variables are
+df_sheet2<- read_excel(temp_file, sheet = sheet_names[3])
+df_all <- df_sheet1 %>%
+
+  mutate(WHITE = df_sheet2$WHITE)
+ 
+df_all <- df_all %>%
+
+  mutate(
+    BLACK = ifelse(BLACK == 1, "Yes", "No"),
+    WHITE = ifelse(WHITE == 1, "Yes", "No"),
+    ASIANI = ifelse(ASIANI == 1, "Yes", "No"),
+    HISPANIC = ifelse(HISPANIC == 1, "Yes", "No")
+  )
+
+ print(df_all)
+```
+
+```{r}
+df_all <- df_all %>% mutate( MEDICADV = ifelse(MEDICADV == 1, "No", "Yes") )
+table(df_all$BLACK, df_all$MEDICADV)
+#barplot(df_all$BLACK, df_all$MEDICADV)
+```
+
+The table shows the results of a cross-tabulation analysis, where two categorical variables were compared. From the results, 1,342 individuals responded "No" to both variables, 1,867 responded "No" to the first variable and "Yes" to the second, 77 responded "Yes" to the first and "No" to the second, and 76 responded "Yes" to both. This distribution suggests a higher number of respondents fall into the "No-No" and "No-Yes" categories, indicating a weaker or less balanced association between the two variables.
+
+```{r}
+table(df_all$WHITE, df_all$MEDICADV)
+```
+The cross-tabulation results show the distribution between two categorical variables, each with "Yes" and "No" outcomes.Among respondents who answered "No" to the first variable, 105 also answered "No" to the second variable, while 101 answered "Yes." Conversely, among those who answered "Yes" to the first variable, 1,314 responded "No" to the second and 1,842 responded "Yes." This pattern suggests that a significantly larger proportion of individuals who answered "Yes" to the first variable also answered "Yes" to the second, indicating a positive association between the two variables.
+
+```{r}
+table(df_all$ASIANI, df_all$MEDICADV)
+```
+The cross-tabulation results indicate a stark imbalance in responses between two categorical variables. Of those who answered "No" to the first variable, 1,418 also answered "No" to the second, and 1,941 answered "Yes."This extreme disparity suggests either a very small "Yes" group in the first variable or possible data quality issues, and it implies little to no association between the two variables based on such limited representation in the "Yes" category.
+
+```{r}
+table(df_all$HISPANIC, df_all$MEDICADV)
+```
+The cross-tabulation results show that among those who answered "No" to the first variable, 53 also answered "No" to the second and 36 answered "Yes." In contrast, a significantly larger number of individuals who answered "Yes" to the first variable also responded "No" (1,245) and "Yes" (1,815) to the second.This indicates that the majority of responses fall within the "Yes" category for both variables, suggesting a possible positive association. The smaller count in the "No-No" and "No-Yes" cells may reflect a minority group or a less common pattern of response. Overall, the data points toward a meaningful relationship between the two variables, with "Yes-Yes" being the most dominant combination.
+
+```{r}
+# Chi-squared test for BLACK and MEDICADV 
+chisq_test_black <- chisq.test(table(df_all$BLACK, df_all$MEDICADV)) 
+chisq_test_black$p.value
+```
+Engaging the Chi- square test,the p-value of black soldiers published 0.04574763 that represents the probability of observing my data which is <0.05 indicating sufficient evidence suggesting that there is a relationship between race, promotion, and medical rates. 
+
+```{r}
+chisq_test_white <- chisq.test(table(df_all$WHITE, df_all$MEDICADV))
+chisq_test_white$p.value
+```
+Engaging the Chi- square test,the p-value of white soldiers published 0.01059356 that represents the probability of observing my data which is <0.05 indicating sufficient evidence suggesting that there is a relationship between race, promotion, and medical rates. 
+
+
+```{r}
+chisq_test_hispanic <- chisq.test(table(df_all$HISPANIC, df_all$MEDICADV)) 
+chisq_test_hispanic$p.value
+```
+Engaging the Chi- square test,the p-value of white soldiers published 0.0005506874 that represents the probability of observing my data which is <0.05 indicating sufficient evidence suggesting that there is a relationship between race, promotion, and medical rates. 
+
+## 1.8
+The analysis reveals a significant relationship between race and promotion advantages within the U.S. military, highlighting disparities that disproportionately affect minority service members. Data shows that Black and Hispanic Soldiers are promoted at lower rates compared to their White counterparts, despite similar qualifications and years of service. (Elaborate on this, explain what the numbers mean and how they are connected. This may mean you explain what the chi-square measure means and what the ranges of the values mean.)
+
+## 1.9
+These findings directly support my research question by confirming that race is a critical factor influencing promotion opportunities in the military. The disparities identified align with the theory outlined in my proposal, which suggests that systemic inequities and historical biases contribute to unequal advancement outcomes among racial groups. By showing statistically significant gaps in promotion rates, the data validates concerns that meritocracy in military ranking is not uniformly applied. This reinforces the need for policy reforms and further investigation into structural barriers faced by minority service members.
+
+## 1.10
+Limitation in studying race and promotion advancement is the potential influence of unmeasured factors such as implicit bias, and systemic disparities within evaluation processes.Most recently many of the dataset within the DOD regarding promotion has been removed based on the current administration and their stance on DEI. 
+```{r plots}
+# Generate plots of the number of service people that are field grade officers compared to general officers by racial group
+# Scatter plot (revise this code for your use)
+plot(df_all)
+
+# Legend
+```
+## 1.3
+Answers: Is there a significant difference between an white and black Soldiers and the opportunity to receive promotion orders within the military ranks? What is the result? Consider grouping the people as People of Color compared to White. Then granularity within the People of Color group to show the number of ranked officers by each racial group. Explain where the clusters are located, if there are values spaced throughout or if there are clusters in specific sections and not in others.
